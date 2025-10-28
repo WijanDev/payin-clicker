@@ -1,0 +1,22 @@
+[
+    {
+        "id": "marketing",
+        "name": "Marketing Campaign",
+        "desc": "Increase Payins per click by 10% for 10 seconds",
+        "cooldown": 300,
+        "cooldownLeft": 0,
+        "cost": 100,
+        "benefit": 10,
+        "icon": "💡"
+    },
+    {
+        "id": "serverCosts",
+        "name": "Optimize Server Costs",
+        "desc": "Reduce server costs by 10% for 10 seconds",
+        "cooldown": 400,
+        "cooldownLeft": 0,
+        "cost": 100,
+        "benefit": 10,
+        "icon": "💻"
+    }
+]

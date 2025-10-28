@@ -1,0 +1,86 @@
+[
+    {
+        "id": "processor",
+        "name": "Payment Processor",
+        "desc": "Increases Payins per click by 1",
+        "baseCost": 15,
+        "cost": 15,
+        "clickBonus": 1,
+        "auto": 0,
+        "owned": 0,
+        "unlockAt": 15,
+        "phase": 1
+    },
+    {
+        "id": "server",
+        "name": "Transaction Server",
+        "desc": "Generates Payins automatically with gradual scaling",
+        "baseCost": 15,
+        "cost": 15,
+        "clickBonus": 0,
+        "auto": 2,
+        "owned": 0,
+        "unlockAt": 15,
+        "phase": 1
+    },
+    {
+        "id": "gateway",
+        "name": "Premium Gateway",
+        "desc": "Multiplies Payins per click by 1.5",
+        "baseCost": 15,
+        "cost": 15,
+        "clickBonusMult": 1.5,
+        "auto": 0,
+        "owned": 0,
+        "unlockAt": 15,
+        "phase": 1
+    },
+    {
+        "id": "merchants",
+        "name": "Merchant Partners",
+        "desc": "Generate massive Payins but increase catastrophe frequency and reduce happiness",
+        "baseCost": 15,
+        "cost": 15,
+        "clickBonus": 0,
+        "auto": 10,
+        "owned": 0,
+        "unlockAt": 15,
+        "phase": 1
+    },
+    {
+        "id": "shieldUp",
+        "name": "Shield Up",
+        "desc": "Reduces catastrophe frequency and magnitude by 10% per level",
+        "baseCost": 15,
+        "cost": 15,
+        "clickBonus": 0,
+        "auto": 0,
+        "owned": 0,
+        "unlockAt": 15,
+        "phase": 1
+    },
+    {
+        "id": "aks",
+        "name": "AKS Migration",
+        "desc": "Exponentially increases all production",
+        "baseCost": 15,
+        "cost": 15,
+        "clickBonusMult": 1.5,
+        "auto": 0,
+        "owned": 0,
+        "unlockAt": 15,
+        "phase": 1
+    },
+    {
+        "id": "eon",
+        "name": "EON",
+        "desc": "Suggests the next optimal upgrade based on your current state",
+        "baseCost": 15,
+        "cost": 15,
+        "clickBonus": 0,
+        "auto": 0,
+        "owned": 0,
+        "unlockAt": 15,
+        "phase": 1
+    }
+]
