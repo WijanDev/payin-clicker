@@ -10,4 +10,5 @@ export interface Upgrade {
     owned: number
     unlockAt: number
     phase: number // 1-4
+    autoBonus: number
 }

@@ -6,25 +6,35 @@ import { CatastropheBar } from '@/components/CatastropheBar'
 import { CatastropheEvents } from '@/components/CatastropheEvents'
 import { SaveIndicator } from '@/components/SaveIndicator'
 import { LoadingScreen } from '@/components/LoadingScreen'
-import { formatNumber } from '@/lib/formatNumber'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { MerchantHappiness } from '@/components/MerchantHappiness'
+import { Coin } from '@/components/Coin'
 import payinIcon from '@/static/img/trace.svg'
+import { useTitle } from '@/hooks/use-title'
+import { formatNumber } from '@/lib/formatNumber'
+import { useFeatureFlagStore } from '@/lib/featureFlagStore'
 
 export const Route = createFileRoute('/')({
   component: Game,
+  head: () => ({
+    links: [
+      {
+        rel: 'icon',
+        href: payinIcon,
+      },
+    ],  
+  }),
 })
 
 function Game() {
   const {
-    payins,
-    payinsPerClick,
-    payinsPerSecond,
-    happiness,
-    addPayins,
     tick,
     loadGame,
     isLoading,
+    payins,
   } = useGameStore()
+
+  const { merchantHappiness, catastrophes } = useFeatureFlagStore.getState()
 
   useEffect(() => {
     loadGame()
@@ -50,55 +60,39 @@ function Game() {
     return () => clearInterval(interval)
   }, [tick])
 
+  useTitle(`${formatNumber(payins)} - Payin Clicker`)
+
   if (isLoading) return <LoadingScreen />
 
+  
+
   return (
-    <div className="flex w-full h-screen overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
+    <div className="flex w-full h-screen overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       {/* Contenido principal */}
-      <main className="flex-1 flex flex-col items-center justify-start overflow-y-auto">
-        <CatastropheBar />
-        <CatastropheEvents />
+      <div className="flex-1 flex flex-col items-center justify-start overflow-y-auto">
+        {catastrophes && (
+          <CatastropheBar />
+        )}
+        {catastrophes && (
+          <CatastropheEvents />
+        )}
         <div className="w-full"	>
           <SidebarTrigger className="text-cyan-400 text-2xl hover:text-cyan-300 transition-colors" />
         </div>
 
-        <h1 className="text-4xl font-bold mb-6 mt-4">Payin Clicker</h1>
-
-        <div className="text-center mb-2 text-2xl">℞ {formatNumber(payins)}</div>
-
-        <div className="text-sm text-cyan-400">
-          Production: {formatNumber(payinsPerSecond)} ℞/s
-        </div>
-
-        <div className="text-sm text-amber-400 mb-6">
-          Click: {formatNumber(payinsPerClick)} ℞/click
-        </div>
-
-        <button
-          onClick={() => {
-            addPayins(payinsPerClick)
-            useGameStore.getState().resolveClick()
-          }}
-          className="w-40 h-40 rounded-full bg-slate-400 text-black text-3xl font-bold shadow-lg hover:scale-105 transition-transform"
-        >
-          <img src={payinIcon} alt="Payin" className="w-full h-full object-contain" />
-        </button>
-
-        <div className="mt-6 w-64 text-center mb-10">
-          <div className="text-xs mb-1 text-gray-300">Merchant Happiness</div>
-          <div className="relative w-full h-3 bg-gray-700 rounded">
-            <div
-              className="absolute top-0 left-0 h-3 bg-green-500 rounded transition-all"
-              style={{ width: `${happiness}%` }}
-            ></div>
-            <span className="absolute inset-0 text-[10px] flex items-center justify-center text-black font-bold">
-              {formatNumber(happiness)}%
-            </span>
-          </div>
-        </div>
-
+        
+        <Coin />
+        
+        
         <SaveIndicator />
-      </main>
+
+        {/* Moved MerchantHappiness to bottom of column */}
+        {merchantHappiness && (
+          <div className="flex-1 flex flex-col justify-end w-full mb-4">
+            <MerchantHappiness />
+          </div>
+        )}
+      </div>
 
       {/* Panel lateral */}
       <ShopPanel />

@@ -5,11 +5,11 @@ import { Upgrade } from '@/domain/models/upgrade'
 import { Decision } from '@/domain/models/decision'
 import { GameState } from '@/domain/models/game-state'
 
-const defaultUpgrades: Upgrade[] = upgrades.map((u, index) => ({
+const defaultUpgrades: Upgrade[] = upgrades.map((u) => ({
   id: u.id,
   name: u.name,
   desc: u.desc,
-  baseCost: calculateBaseCost(index),
+  baseCost: u.baseCost,
   cost: u.cost,
   clickBonus: u.clickBonus,
   clickBonusMult: u.clickBonusMult,
@@ -17,6 +17,7 @@ const defaultUpgrades: Upgrade[] = upgrades.map((u, index) => ({
   owned: u.owned,
   unlockAt: u.unlockAt,
   phase: u.phase,
+  autoBonus: u.autoBonus,
 })) as Upgrade[]
 
 const defaultDecisions: Decision[] = decisions.map((d) => ({
@@ -30,12 +31,6 @@ const defaultDecisions: Decision[] = decisions.map((d) => ({
   icon: d.icon,
 })) as Decision[]
 
-function calculateBaseCost(index: number, base: number = 15): number {
-  // Escala logarítmica: cada upgrade cuesta más que el anterior
-  // pero sin crecer de forma explosiva
-  return Math.floor(base * Math.pow(10, Math.log10(index + 1) * 1.2))
-}
-
 export const useGameStore = create<GameState>((set, get) => {
   const recalcStats = (upgrades: Upgrade[]) => {
     let clickPower = 1
@@ -43,15 +38,34 @@ export const useGameStore = create<GameState>((set, get) => {
     let happiness = get().happiness
 
     upgrades.forEach((u) => {
-      if (u.clickBonus) clickPower += u.clickBonus * u.owned
-      if (u.clickBonusMult) clickPower *= u.clickBonusMult ** u.owned
-      if (u.auto) autoPower += u.auto
+      if (u.owned > 0) {
+        // 💥 Clicks lineales
+        if (u.clickBonus) clickPower += u.clickBonus * u.owned
 
-      if (u.id === 'merchants' && u.owned > 0) happiness -= u.owned * 2
-      if (u.id === 'shieldUp' && u.owned > 0) happiness += u.owned * 1
-      if (u.id === 'aks' && u.owned > 0) {
-        clickPower *= 1.2 ** u.owned
-        autoPower *= 1.2 ** u.owned
+        // ⚙️ Producción automática lineal + bonus global
+        if (u.auto) {
+          const autoBonus = u.owned > 1 ? Math.pow(u.owned - 1, 1 + u.autoBonus) : 0
+          autoPower += (u.auto * u.owned) + autoBonus
+          console.log('autoPower:', autoPower)
+          console.log('autoBonus:', autoBonus)
+          console.log('u.autoBonus:', u.autoBonus)
+          console.log('u.owned:', u.owned)
+        }
+
+        // 🔁 Multiplicadores específicos
+        if (u.clickBonusMult) clickPower *= u.clickBonusMult ** u.owned
+
+        // ❤️ Efectos especiales
+        if (u.id === 'merchants') happiness -= u.owned * 2
+        if (u.id === 'shieldUp') happiness += u.owned * 1
+        if (u.id === 'aks') {
+          clickPower *= 1 + 0.02 * u.owned
+          autoPower *= 1 + 0.02 * u.owned
+        }
+        if (u.id === 'corporateBuyout') {
+          clickPower *= 1 + 0.05 * u.owned
+          autoPower *= 1 + 0.05 * u.owned
+        }
       }
     })
 
@@ -59,21 +73,22 @@ export const useGameStore = create<GameState>((set, get) => {
     return { clickPower, autoPower, happiness }
   }
 
-
-
   const updateUpgradePhases = () => {
     const { payins, upgrades } = get()
+
     const updated = upgrades.map((u) => {
       let newPhase = u.phase
 
-      // Fase 1 → 2
+      // Fase 1 → 2 (incógnita)
       if (payins >= u.unlockAt / 3 && newPhase < 2) newPhase = 2
 
-      // Fase 2 → 3
+      // Fase 2 → 3 (visible pero bloqueado)
       if (payins >= u.unlockAt / 2 && newPhase < 3) newPhase = 3
 
       // Fase 3 → 4 (accesible)
       if (payins >= u.cost) newPhase = 4
+
+      // Si el jugador baja de dinero, no retroceder más allá de 3
       else if (newPhase === 4 && payins < u.cost) newPhase = 3
 
       return { ...u, phase: newPhase }
@@ -95,9 +110,43 @@ export const useGameStore = create<GameState>((set, get) => {
     loadingPhase: 'servers',
     catastrophesResolved: 0,
     theme: (safeLocalStorage()?.getItem('theme') as 'light' | 'dark') || 'light',
+    totalClicks: 0,
     setTheme: (theme) => set({ theme }),
     resetGame: () => {
-      localStorage.clear()
+      // Limpia el almacenamiento
+      safeLocalStorage()?.removeItem('payinClickerSave')
+
+      console.log('defaultUpgrades:', defaultUpgrades)
+      debugger
+
+      // Reinicia upgrades con owned = 0 y auto = 0
+      const resetUpgrades = defaultUpgrades.map((u) => ({
+        ...u,
+        owned: 0,
+        cost: u.baseCost,
+        clickBonus: u.clickBonus ?? 0,
+        phase: 1,
+      }))
+
+      // Reinicia decisiones
+      const resetDecisions = defaultDecisions.map((d) => ({
+        ...d,
+        cooldownLeft: 0,
+      }))
+
+      // Recalcula estadísticas con upgrades vacíos
+      const { clickPower, autoPower, happiness } = recalcStats(resetUpgrades)
+
+      set({
+        payins: 0,
+        payinsPerClick: clickPower, // normalmente 1
+        payinsPerSecond: autoPower, // normalmente 0
+        happiness,
+        upgrades: resetUpgrades,
+        decisions: resetDecisions,
+        catastrophes: [],
+        catastrophesResolved: 0,
+      })
       window.location.reload()
     },
     addPayins: (amount) => {
@@ -149,7 +198,7 @@ export const useGameStore = create<GameState>((set, get) => {
     },
 
     resolveClick: () => {
-      const { catastrophes } = get()
+      const { catastrophes, totalClicks } = get()
       const updated = catastrophes.map((c) =>
         c.clicksDone < c.clicksNeeded
           ? { ...c, clicksDone: c.clicksDone + 1 }
@@ -170,6 +219,7 @@ export const useGameStore = create<GameState>((set, get) => {
       } else {
         set({ catastrophes: remaining })
       }
+      set({ totalClicks: totalClicks + 1 })
     },
 
     buyUpgrade: (id) => {
@@ -179,26 +229,16 @@ export const useGameStore = create<GameState>((set, get) => {
 
       const newOwned = upgrade.owned + 1
 
-      // 💰 Coste logarítmico (más pronunciado)
-      const costGrowthRate = 1 + Math.log10(newOwned + 1) * 0.6
+      // 💰 Coste exponencial suave (Cookie Clicker style)
+      const costGrowthRate = 1.15
       const newCost = Math.floor(upgrade.baseCost * costGrowthRate ** newOwned)
-
-      // ⚙️ Producción automática logarítmica (media)
-      const autoGrowthRate = 1 + Math.log10(newOwned + 1) * 0.3
-      const newAuto = upgrade.auto ? upgrade.auto * autoGrowthRate : 0
-
-      // 👆 Producción por click logarítmica (más suave)
-      const clickGrowthRate = 1 + Math.log10(newOwned + 1) * 0.2
-      const newClickBonus = upgrade.clickBonus ? upgrade.clickBonus * clickGrowthRate : 0
 
       const newUpgrades = upgrades.map((u) =>
         u.id === id
           ? {
             ...u,
             owned: newOwned,
-            cost: newCost,
-            auto: newAuto,
-            clickBonus: newClickBonus,
+            cost: newCost
           }
           : u
       )

@@ -9,11 +9,11 @@ export function SidePanel() {
 
   return (
     <Tabs defaultValue="info" className="w-full px-2">
-      <TabsList className="grid w-full grid-cols-4">
-        <TabsTrigger value="info">ℹ️</TabsTrigger>
-        <TabsTrigger value="decisions">💡</TabsTrigger>
-        <TabsTrigger value="leaderboard">🏆</TabsTrigger>
-        <TabsTrigger value="settings">⚙️</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-4 hover:cursor-pointer">
+        <TabsTrigger value="decisions" className="hover:cursor-pointer">💡</TabsTrigger>
+        <TabsTrigger value="leaderboard" className="hover:cursor-pointer">🏆</TabsTrigger>
+        <TabsTrigger value="info" className="hover:cursor-pointer">ℹ️</TabsTrigger>
+        <TabsTrigger value="settings" className="hover:cursor-pointer">⚙️</TabsTrigger>
       </TabsList>
       <TabsContent value="info">
         <Info />

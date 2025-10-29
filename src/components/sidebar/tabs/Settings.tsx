@@ -9,8 +9,8 @@ export function Settings() {
                 Settings
             </h2>
             <AlertDialog>
-                <AlertDialogTrigger>
-                    <Button variant="destructive">
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="hover:cursor-pointer">
                         Reset Game
                     </Button>
                 </AlertDialogTrigger>

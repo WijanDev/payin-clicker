@@ -14,7 +14,7 @@ import { Toaster } from '@/components/ui/sonner'
 import type { QueryClient } from '@tanstack/react-query'
 import { useGameStore } from '@/lib/gameStore'
 import { useEffect } from 'react'
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/sidebar/AppSidebar'
 
 interface MyRouterContext {

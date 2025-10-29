@@ -8,11 +8,11 @@ export function ShopPanel() {
       <aside className="w-64 h-full overflow-y-auto border-l border-slate-700 bg-slate-800/90 p-4 text-white">
         <h2 className="text-lg font-bold mb-4 text-center">Shop</h2>
   
-        {upgrades.map((u) => {
+        {upgrades.map((u, index) => {
           if (u.phase === 1) return null
           if (u.phase === 2)
             return (
-                <Tooltip>
+                <Tooltip key={index}>
                     <TooltipTrigger asChild>
                         <div
                             key={u.id}
@@ -22,20 +22,13 @@ export function ShopPanel() {
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {u.desc}<br />
-                        Cost: ℞{u.cost.toLocaleString()}<br />
-                        Click bonus: {u.clickBonus?.toLocaleString()}<br />
-                        Click bonus mult: {u.clickBonusMult?.toLocaleString()}<br />
-                        Auto: {u.auto?.toLocaleString()}<br />
-                        Unlock at: {u.unlockAt?.toLocaleString()}<br />
-                        Phase: {u.phase?.toLocaleString()}<br />
-                        Owned: {u.owned?.toLocaleString()}
+                        ??? (Unknown Upgrade)
                     </TooltipContent>
                 </Tooltip>
             )
           if (u.phase === 3)
             return (
-              <Tooltip>
+              <Tooltip key={index}>
                 <TooltipTrigger asChild>
               <div
                 key={u.id}
@@ -59,7 +52,7 @@ export function ShopPanel() {
           if (u.phase === 4) {
             const canAfford = payins >= u.cost
             return (
-              <Tooltip>
+              <Tooltip key={index}>
                 <TooltipTrigger asChild>
               <div
                 key={u.id}

@@ -15,6 +15,7 @@ export interface GameState {
     isLoading: boolean
     loadingPhase: 'servers' | 'data' | 'ready'
     theme: 'light' | 'dark'
+    totalClicks: number
     setTheme: (theme: 'light' | 'dark') => void
     addPayins: (amount: number) => void
     tick: () => void
